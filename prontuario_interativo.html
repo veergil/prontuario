@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Prontuário Eletrônico — UNIFTC Enfermagem</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --g950:#071E14; --g900:#0B3D2E; --g800:#145A32; --g700:#1E8449; --g600:#27AE60;
+  --g400:#52BE80; --g200:#A9DFBF; --g100:#D5F5E3; --g50:#F0FBF4;
+  --t700:#117A65; --t100:#D0ECE7;
+  --r100:#FADBD8; --y100:#FEF9E7; --b100:#EBF5FB;
+  --gr50:#F8F9FA; --gr100:#F2F3F4; --gr200:#E8EAED; --gr300:#D5D8DC;
+  --gr500:#7F8C8D; --gr600:#566573; --gr800:#2C3E50; --white:#fff;
+  --shadow:0 2px 12px rgba(11,61,46,.10);
+  --shadow-md:0 6px 24px rgba(0,0,0,.10);
+  --r:10px; --font:'DM Sans',sans-serif; --mono:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:#EDF5EF;color:var(--gr800);font-size:14px;line-height:1.6}
+
+/* TOP BAR */
+.topbar{background:var(--g900);color:#fff;padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.topbar-l{display:flex;align-items:center;gap:10px}
+.topbar-logo{width:30px;height:30px;background:var(--g600);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.topbar-title{font-family:'Playfair Display',serif;font-size:15px}
+.topbar-r{display:flex;gap:8px;align-items:center}
+.badge{background:var(--g600);color:#fff;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.btn-topbar{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;padding:6px 13px;border-radius:7px;font-size:12px;cursor:pointer;font-family:var(--font);transition:.2s;display:flex;align-items:center;gap:5px}
+.btn-topbar:hover{background:rgba(255,255,255,.22)}
+.btn-save-main{background:var(--g600);border-color:var(--g400)}
+.btn-save-main:hover{background:var(--g700)}
+.btn-back{background:rgba(255,255,255,.08)}
+.save-indicator{font-size:11px;color:rgba(255,255,255,.5);display:flex;align-items:center;gap:5px}
+.save-indicator.saved{color:var(--g400)}
+
+/* PROGRESS */
+.progress-bar{background:rgba(255,255,255,.1);height:3px;width:100%;position:fixed;top:52px;z-index:199}
+.progress-fill{background:var(--g600);height:100%;width:0%;transition:width .2s}
+
+/* LAYOUT */
+.wrap{max-width:1140px;margin:0 auto;padding:26px 16px 80px;display:flex;gap:22px;align-items:flex-start}
+
+/* SIDEBAR */
+.sidebar{width:210px;flex-shrink:0;position:sticky;top:64px}
+.sidebar-label{font-size:10px;font-weight:700;color:var(--gr500);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;padding-left:4px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:8px;margin-bottom:2px;cursor:pointer;font-size:12.5px;font-weight:500;color:var(--gr800);text-decoration:none;transition:.15s}
+.nav-item:hover{background:var(--g100);color:var(--g800)}
+.nav-item.active{background:var(--g800);color:#fff}
+.nav-item .ico{font-size:14px}
+.sidebar-progress{margin-top:16px;background:var(--white);border-radius:var(--r);padding:14px;box-shadow:var(--shadow)}
+.sidebar-progress-title{font-size:10px;font-weight:700;color:var(--gr500);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}
+.sp-item{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px}
+.sp-dot{width:10px;height:10px;border-radius:50%;background:var(--gr300);flex-shrink:0;transition:.3s}
+.sp-dot.done{background:var(--g600)}
+.sp-label{color:var(--gr500);transition:.2s;flex:1}
+.sp-label.done{color:var(--g800);font-weight:500}
+.sp-pct{font-size:10px;color:var(--gr400)}
+
+/* MAIN */
+.main{flex:1;min-width:0}
+
+/* CAPA */
+.capa{background:linear-gradient(135deg,var(--g900),var(--t700));border-radius:var(--r);padding:36px;color:#fff;text-align:center;margin-bottom:20px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.capa::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 75% 15%,rgba(39,174,96,.3) 0%,transparent 60%)}
+.capa-ico{font-size:44px;margin-bottom:10px;position:relative}
+.capa h1{font-family:'Playfair Display',serif;font-size:24px;margin-bottom:6px;position:relative}
+.capa p{font-size:13px;opacity:.8;position:relative}
+.capa-chips{display:flex;justify-content:center;gap:10px;margin-top:18px;flex-wrap:wrap;position:relative}
+.chip{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;backdrop-filter:blur(4px)}
+
+/* CARD */
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:18px;overflow:hidden;border:1px solid rgba(0,0,0,.06);scroll-margin-top:68px;animation:fadeUp .3s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.card:nth-child(1){animation-delay:.05s}.card:nth-child(2){animation-delay:.1s}
+.card:nth-child(3){animation-delay:.15s}.card:nth-child(4){animation-delay:.2s}
+.card:nth-child(5){animation-delay:.25s}.card:nth-child(6){animation-delay:.3s}
+.card-hdr{display:flex;align-items:center;gap:10px;padding:13px 20px;background:linear-gradient(90deg,var(--g800),var(--t700));color:#fff}
+.card-hdr .ico{font-size:18px}
+.card-hdr h2{font-family:'Playfair Display',serif;font-size:16px}
+.card-hdr .section-status{margin-left:auto;font-size:11px;background:rgba(255,255,255,.2);padding:2px 8px;border-radius:10px;white-space:nowrap}
+.card-body{padding:18px 20px}
+
+/* SUBSECTION */
+.sub{font-size:12.5px;font-weight:700;color:var(--t700);margin:16px 0 8px;display:flex;align-items:center;gap:6px}
+.sub::after{content:'';flex:1;height:1px;background:var(--g200);margin-left:4px}
+
+/* FORM FIELDS */
+.field-grid{display:grid;gap:12px}
+.field-grid-2{grid-template-columns:1fr 1fr}
+.field-grid-3{grid-template-columns:1fr 1fr 1fr}
+.field-grid-4{grid-template-columns:1fr 1fr 1fr 1fr}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;font-weight:700;color:var(--gr500);text-transform:uppercase;letter-spacing:.07em}
+.field input,.field select,.field textarea{
+  border:1.5px solid var(--gr300);border-radius:7px;
+  padding:8px 10px;font-family:var(--font);font-size:13.5px;
+  color:var(--gr800);background:var(--gr50);transition:.2s;outline:none;width:100%;
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--g600);background:#fff;box-shadow:0 0 0 3px rgba(39,174,96,.12)}
+.field input.filled,.field select.filled,.field textarea.filled{border-color:var(--g200);background:var(--g50)}
+.field textarea{resize:vertical;min-height:72px}
+.field select{cursor:pointer}
+.field .hint{font-size:10.5px;color:var(--gr500);font-style:italic}
+.required-star{color:#E74C3C}
+
+/* VITAL GRID */
+.vitals-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.vital-card{background:var(--g50);border:1.5px solid var(--g200);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;transition:.2s}
+.vital-card:focus-within{border-color:var(--g600);box-shadow:0 0 0 3px rgba(39,174,96,.1)}
+.vital-lbl{font-size:10px;font-weight:700;color:var(--gr500);text-transform:uppercase;letter-spacing:.08em}
+.vital-input{border:none;background:transparent;font-family:var(--mono);font-size:17px;font-weight:700;color:var(--g800);width:100%;outline:none}
+.vital-input::placeholder{color:var(--gr300);font-size:14px}
+.vital-unit{font-size:11px;color:var(--gr500)}
+
+/* TABLE STYLE FIELDS */
+.tfield-table{width:100%;border-collapse:collapse}
+.tfield-table th{background:var(--g900);color:#fff;padding:8px 12px;font-size:11.5px;font-weight:600;letter-spacing:.04em;text-align:left}
+.tfield-table td{padding:6px 8px;border-bottom:1px solid var(--gr100)}
+.tfield-table tr:nth-child(even){background:var(--gr50)}
+.tfield-table td:first-child{background:var(--t100);font-weight:600;color:var(--g900);font-size:12px;white-space:nowrap;width:170px}
+.tfield-table td input,.tfield-table td textarea,.tfield-table td select{border:1px solid var(--gr300);border-radius:5px;padding:5px 8px;font-family:var(--font);font-size:13px;color:var(--gr800);background:var(--gr50);outline:none;width:100%;transition:.15s}
+.tfield-table td input:focus,.tfield-table td textarea:focus,.tfield-table td select:focus{border-color:var(--g600);background:#fff}
+.tfield-table td textarea{resize:vertical;min-height:44px}
+
+/* DIAGNÓSTICO ROWS */
+.diag-row{display:flex;gap:0;border:1px solid var(--g200);border-radius:10px;overflow:hidden;margin-bottom:8px;animation:fadeUp .2s ease both}
+.diag-num-col{background:var(--g800);color:#fff;display:flex;align-items:center;justify-content:center;min-width:44px;font-family:var(--mono);font-weight:700;font-size:14px}
+.diag-body-col{padding:10px 14px;flex:1;display:flex;flex-direction:column;gap:8px}
+.diag-body-col .field-grid-3{grid-template-columns:2fr 1fr 1fr}
+
+/* IMPLEMENTAÇÃO ROWS */
+.impl-row{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start;animation:fadeUp .2s ease both}
+.impl-hora{flex-shrink:0;width:90px}
+.impl-hora input{font-family:var(--mono);font-weight:600;text-align:center}
+.impl-acao{flex:1}
+.btn-add-row{background:var(--g50);border:1.5px dashed var(--g200);color:var(--g700);padding:9px;border-radius:8px;width:100%;cursor:pointer;font-family:var(--font);font-size:13px;font-weight:600;transition:.2s;margin-top:4px}
+.btn-add-row:hover{background:var(--g100);border-color:var(--g600)}
+.btn-remove{background:none;border:none;color:var(--gr300);cursor:pointer;font-size:16px;padding:2px 5px;line-height:1;transition:.2s;align-self:flex-start;margin-top:6px}
+.btn-remove:hover{color:#E74C3C}
+
+/* EVOLUÇÃO */
+.evol-block{border:1.5px solid var(--g200);border-radius:10px;overflow:hidden;margin-bottom:10px;animation:fadeUp .2s ease both}
+.evol-hdr{background:var(--g50);padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--g200)}
+.evol-hdr input,.evol-hdr select{padding:5px 8px;border:1px solid var(--gr300);border-radius:5px;font-family:var(--font);font-size:12.5px;background:#fff;outline:none}
+.evol-hdr input:focus,.evol-hdr select:focus{border-color:var(--g600)}
+.evol-hdr label{font-size:11px;font-weight:700;color:var(--gr500)}
+.evol-body{padding:12px 14px}
+
+/* AVALIAÇÃO */
+.aval-row{display:flex;gap:10px;padding:10px 12px;background:var(--gr50);border:1px solid var(--gr100);border-radius:8px;margin-bottom:8px;align-items:flex-start;flex-wrap:wrap;animation:fadeUp .2s ease both}
+.aval-diag{flex:2;min-width:160px;font-size:13px}
+.aval-diag input{font-weight:500}
+.aval-status-col{flex:1;min-width:100px;display:flex;flex-direction:column;gap:4px}
+.aval-conduta{flex:2;min-width:160px}
+
+/* BADGES SELECT */
+select.badge-select{border:1.5px solid;border-radius:6px;padding:4px 8px;font-size:12px;font-weight:700;cursor:pointer;outline:none}
+select.badge-green{background:var(--g100);border-color:var(--g200);color:var(--g800)}
+select.badge-yellow{background:var(--y100);border-color:#F0D000;color:#7D6608}
+select.badge-red{background:var(--r100);border-color:#F1948A;color:#922B21}
+
+/* ALTA GRID */
+.alta-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.alta-card{background:var(--g50);border:1.5px solid var(--g200);border-radius:10px;padding:14px}
+.alta-card-title{font-size:11px;font-weight:700;color:var(--g800);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.alta-card.alert{background:#FFF5F5;border-color:var(--r100)}
+.alta-card.alert .alta-card-title{color:#C0392B}
+
+/* ASSINATURA */
+.sign-box{border-top:2px dashed var(--g200);margin-top:24px;padding-top:20px}
+.sign-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:16px;margin-bottom:12px}
+
+/* FOOTER */
+.footer{text-align:center;font-size:11px;color:var(--gr500);font-style:italic;margin-top:32px;padding-top:14px;border-top:1px solid var(--gr300)}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--g800);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;transform:translateY(80px);opacity:0;transition:.3s;z-index:999;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* SAVE BANNER */
+.save-banner{
+  position:fixed;bottom:0;left:0;right:0;z-index:300;
+  background:var(--g900);color:#fff;
+  padding:12px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  transform:translateY(100%);transition:.3s;
+  box-shadow:0 -4px 24px rgba(0,0,0,.2);
+}
+.save-banner.show{transform:translateY(0)}
+.save-banner p{font-size:14px}
+.save-banner p span{color:var(--g400);font-weight:600}
+.btn-save-banner{background:var(--g600);color:#fff;border:none;padding:9px 22px;border-radius:8px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;transition:.2s}
+.btn-save-banner:hover{background:var(--g400);color:var(--g900)}
+
+@media(max-width:768px){
+  .sidebar{display:none}
+  .wrap{flex-direction:column;padding:16px 12px 120px}
+  .field-grid-2,.field-grid-3,.field-grid-4{grid-template-columns:1fr}
+  .sign-grid{grid-template-columns:1fr}
+  .diag-body-col .field-grid-3{grid-template-columns:1fr}
+  .topbar-title{display:none}
+}
+@media print{
+  .topbar,.sidebar,.progress-bar,.btn-topbar,.btn-add-row,.btn-remove,.save-banner,.toast{display:none!important}
+  .wrap{padding:0}.card{box-shadow:none;page-break-inside:avoid}
+  body{background:#fff}
+  .field input,.field textarea,.field select,
+  .tfield-table td input,.tfield-table td textarea,
+  .vital-input,.evol-hdr input,.evol-hdr select{border:none;background:transparent!important;box-shadow:none!important}
+  .card-hdr{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-l">
+    <div class="topbar-logo">✚</div>
+    <span class="topbar-title">Prontuário Eletrônico de Enfermagem</span>
+  </div>
+  <div class="topbar-r">
+    <span class="save-indicator" id="saveIndicator">⏺ Não salvo</span>
+    <span class="badge">OAT 2</span>
+    <button class="btn-topbar btn-back" onclick="voltarDashboard()">← Dashboard</button>
+    <button class="btn-topbar btn-save-main" onclick="salvarProntuario(true)">💾 Salvar</button>
+    <button class="btn-topbar" onclick="window.print()">🖨 Imprimir</button>
+  </div>
+</div>
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+<div class="wrap">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-label">Seções</div>
+    <a class="nav-item active" href="#sec1"><span class="ico">🧾</span>Identificação</a>
+    <a class="nav-item" href="#sec2"><span class="ico">🩺</span>Coleta de Dados</a>
+    <a class="nav-item" href="#sec3"><span class="ico">🧠</span>Diagnósticos</a>
+    <a class="nav-item" href="#sec4"><span class="ico">🎯</span>Planejamento</a>
+    <a class="nav-item" href="#sec5"><span class="ico">⚙️</span>Implementação</a>
+    <a class="nav-item" href="#sec6"><span class="ico">📈</span>Evolução</a>
+    <a class="nav-item" href="#sec7"><span class="ico">✅</span>Avaliação</a>
+
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-title">Preenchimento</div>
+      <div class="sp-item"><div class="sp-dot" id="dot1"></div><span class="sp-label" id="lbl1">Identificação</span><span class="sp-pct" id="pct1"></span></div>
+      <div class="sp-item"><div class="sp-dot" id="dot2"></div><span class="sp-label" id="lbl2">Coleta</span><span class="sp-pct" id="pct2"></span></div>
+      <div class="sp-item"><div class="sp-dot" id="dot3"></div><span class="sp-label" id="lbl3">Diagnósticos</span><span class="sp-pct" id="pct3"></span></div>
+      <div class="sp-item"><div class="sp-dot" id="dot4"></div><span class="sp-label" id="lbl4">Planejamento</span><span class="sp-pct" id="pct4"></span></div>
+      <div class="sp-item"><div class="sp-dot" id="dot5"></div><span class="sp-label" id="lbl5">Implementação</span><span class="sp-pct" id="pct5"></span></div>
+      <div class="sp-item"><div class="sp-dot" id="dot6"></div><span class="sp-label" id="lbl6">Evolução</span><span class="sp-pct" id="pct6"></span></div>
+      <div class="sp-item"><div class="sp-dot" id="dot7"></div><span class="sp-label" id="lbl7">Avaliação</span><span class="sp-pct" id="pct7"></span></div>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <!-- CAPA -->
+    <div class="capa">
+      <div class="capa-ico">✚</div>
+      <h1>Prontuário Eletrônico de Enfermagem</h1>
+      <p>Processo de Enfermagem — Registro Sistematizado do Cuidar</p>
+      <div class="capa-chips">
+        <span class="chip">🏥 UNIFTC</span>
+        <span class="chip">👩‍⚕️ Enfermagem</span>
+        <span class="chip">📚 Processo do Cuidar</span>
+        <span class="chip">📋 OAT 2 — 2026</span>
+      </div>
+    </div>
+
+    <!-- ══ 1. IDENTIFICAÇÃO ══ -->
+    <div class="card" id="sec1">
+      <div class="card-hdr"><span class="ico">🧾</span><h2>1. Identificação do Paciente</h2><span class="section-status" id="st1">Não iniciado</span></div>
+      <div class="card-body">
+        <div class="field-grid field-grid-2">
+          <div class="field"><label>Nome fictício <span class="required-star">*</span></label><input type="text" id="nomePaciente" placeholder="Ex.: João da Silva Santos" data-sec="1"/></div>
+          <div class="field"><label>Prontuário Nº</label><input type="text" placeholder="Ex.: 2026/0001" data-sec="1"/></div>
+        </div>
+        <div class="field-grid field-grid-4" style="margin-top:10px">
+          <div class="field"><label>Data de Nascimento</label><input type="date" data-sec="1"/></div>
+          <div class="field"><label>Idade</label><input type="text" placeholder="Ex.: 61 anos" data-sec="1"/></div>
+          <div class="field"><label>Sexo</label>
+            <select data-sec="1"><option value="">Selecione</option><option>Masculino</option><option>Feminino</option><option>Outro</option></select>
+          </div>
+          <div class="field"><label>Estado Civil</label>
+            <select data-sec="1"><option value="">Selecione</option><option>Solteiro(a)</option><option>Casado(a)</option><option>Viúvo(a)</option><option>Divorciado(a)</option><option>União estável</option></select>
+          </div>
+        </div>
+        <div class="field-grid field-grid-4" style="margin-top:10px">
+          <div class="field"><label>Raça/Cor</label>
+            <select data-sec="1"><option value="">Selecione</option><option>Branca</option><option>Preta</option><option>Parda</option><option>Amarela</option><option>Indígena</option></select>
+          </div>
+          <div class="field"><label>Escolaridade</label>
+            <select data-sec="1"><option value="">Selecione</option><option>Sem escolaridade</option><option>Ensino Fundamental</option><option>Ensino Médio</option><option>Ensino Superior</option><option>Pós-graduação</option></select>
+          </div>
+          <div class="field"><label>Profissão</label><input type="text" placeholder="Ex.: Aposentado" data-sec="1"/></div>
+          <div class="field"><label>Religião</label><input type="text" placeholder="Ex.: Católico" data-sec="1"/></div>
+        </div>
+        <div class="field-grid field-grid-2" style="margin-top:10px">
+          <div class="field"><label>Endereço completo</label><input type="text" placeholder="Rua, número, bairro, cidade/UF" data-sec="1"/></div>
+          <div class="field"><label>Telefone / Contato</label><input type="text" placeholder="(XX) 9 XXXX-XXXX" data-sec="1"/></div>
+        </div>
+        <div class="field-grid field-grid-2" style="margin-top:10px">
+          <div class="field"><label>Responsável / Acompanhante</label><input type="text" placeholder="Nome e parentesco" data-sec="1"/></div>
+          <div class="field"><label>Telefone do responsável</label><input type="text" placeholder="(XX) 9 XXXX-XXXX" data-sec="1"/></div>
+        </div>
+        <div class="field-grid field-grid-4" style="margin-top:10px">
+          <div class="field"><label>Data de Internação</label><input type="date" data-sec="1"/></div>
+          <div class="field"><label>Hora de Admissão</label><input type="time" data-sec="1"/></div>
+          <div class="field"><label>Setor / Clínica</label><input type="text" placeholder="Ex.: Clínica Médica" data-sec="1"/></div>
+          <div class="field"><label>Leito Nº</label><input type="text" placeholder="Ex.: 12-A" data-sec="1"/></div>
+        </div>
+        <div class="field-grid field-grid-2" style="margin-top:10px">
+          <div class="field"><label>Médico Responsável (CRM)</label><input type="text" placeholder="Nome — CRM XXXXX-UF" data-sec="1"/></div>
+          <div class="field"><label>Alergias conhecidas</label><input type="text" placeholder="Ex.: Penicilina (rash) ou Nenhuma" data-sec="1"/></div>
+        </div>
+        <div class="field" style="margin-top:10px">
+          <label>Diagnóstico Médico de Admissão <span class="required-star">*</span></label>
+          <input type="text" placeholder="Ex.: HAS descompensada + DM2" data-sec="1"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 2. COLETA ══ -->
+    <div class="card" id="sec2">
+      <div class="card-hdr"><span class="ico">🩺</span><h2>2. Coleta de Dados — Anamnese e Exame Físico</h2><span class="section-status" id="st2">Não iniciado</span></div>
+      <div class="card-body">
+        <div class="sub">▸ 2.1 Queixa Principal e História da Doença Atual</div>
+        <div class="field">
+          <label>Queixa principal e HDA <span class="required-star">*</span></label>
+          <textarea rows="4" placeholder="Descreva a queixa principal, início, duração, fatores de melhora/piora, sintomas associados e como o paciente foi admitido..." data-sec="2"></textarea>
+        </div>
+        <div class="sub">▸ 2.2 Histórico de Saúde</div>
+        <div style="overflow-x:auto">
+          <table class="tfield-table">
+            <thead><tr><th>Aspecto</th><th>Dados</th></tr></thead>
+            <tbody>
+              <tr><td>Doenças Prévias</td><td><input type="text" placeholder="Ex.: HAS há 15 anos; DM2; Dislipidemia" data-sec="2"/></td></tr>
+              <tr><td>Cirurgias Anteriores</td><td><input type="text" placeholder="Ex.: Apendicectomia em 1998 / Nenhuma" data-sec="2"/></td></tr>
+              <tr><td>Medicamentos em Uso</td><td><textarea placeholder="Liste os medicamentos, doses e frequência" data-sec="2"></textarea></td></tr>
+              <tr><td>Hábitos de Vida</td><td><input type="text" placeholder="Tabagismo, etilismo, atividade física, alimentação" data-sec="2"/></td></tr>
+              <tr><td>Histórico Familiar</td><td><input type="text" placeholder="Doenças prevalentes na família" data-sec="2"/></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="sub">▸ 2.3 Sinais Vitais</div>
+        <div class="vitals-grid">
+          <div class="vital-card"><span class="vital-lbl">PA (mmHg)</span><input class="vital-input" type="text" placeholder="Ex.: 190×110" data-sec="2"/><span class="vital-unit">mmHg</span></div>
+          <div class="vital-card"><span class="vital-lbl">FC (bpm)</span><input class="vital-input" type="text" placeholder="Ex.: 98" data-sec="2"/><span class="vital-unit">batimentos/min</span></div>
+          <div class="vital-card"><span class="vital-lbl">FR (irpm)</span><input class="vital-input" type="text" placeholder="Ex.: 22" data-sec="2"/><span class="vital-unit">incursões/min</span></div>
+          <div class="vital-card"><span class="vital-lbl">Temperatura</span><input class="vital-input" type="text" placeholder="Ex.: 37,2" data-sec="2"/><span class="vital-unit">°C</span></div>
+          <div class="vital-card"><span class="vital-lbl">SpO₂ (%)</span><input class="vital-input" type="text" placeholder="Ex.: 95" data-sec="2"/><span class="vital-unit">% (ar ambiente)</span></div>
+          <div class="vital-card"><span class="vital-lbl">Glicemia</span><input class="vital-input" type="text" placeholder="Ex.: 285" data-sec="2"/><span class="vital-unit">mg/dL</span></div>
+          <div class="vital-card"><span class="vital-lbl">Peso / Altura</span><input class="vital-input" type="text" placeholder="92kg / 1,72m" data-sec="2"/><span class="vital-unit">IMC calculado</span></div>
+          <div class="vital-card"><span class="vital-lbl">Dor (EVA)</span><input class="vital-input" type="text" placeholder="Ex.: 8/10" data-sec="2"/><span class="vital-unit">0=sem dor · 10=máxima</span></div>
+        </div>
+        <div class="sub">▸ 2.4 Avaliação por Sistemas</div>
+        <div style="overflow-x:auto">
+          <table class="tfield-table">
+            <thead><tr><th>Sistema</th><th>Achados do Exame Físico</th></tr></thead>
+            <tbody>
+              <tr><td>Neurológico</td><td><textarea placeholder="Nível de consciência, orientação, GCS, pupilas, déficits motores/sensitivos..." data-sec="2"></textarea></td></tr>
+              <tr><td>Cardiovascular</td><td><textarea placeholder="Ritmo, bulhas, sopros, pulsos, edema, TEC..." data-sec="2"></textarea></td></tr>
+              <tr><td>Respiratório</td><td><textarea placeholder="MV, ruídos adventícios, padrão respiratório, SpO2..." data-sec="2"></textarea></td></tr>
+              <tr><td>Gastrointestinal</td><td><textarea placeholder="Abdome, RHI, dor, eliminações intestinais..." data-sec="2"></textarea></td></tr>
+              <tr><td>Urinário</td><td><textarea placeholder="Diurese, características da urina, SVD..." data-sec="2"></textarea></td></tr>
+              <tr><td>Tegumentar</td><td><textarea placeholder="Integridade da pele, turgor, mucosas, lesões..." data-sec="2"></textarea></td></tr>
+              <tr><td>Musculoesquelético</td><td><textarea placeholder="Força muscular, mobilidade, marcha..." data-sec="2"></textarea></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 3. DIAGNÓSTICOS ══ -->
+    <div class="card" id="sec3">
+      <div class="card-hdr"><span class="ico">🧠</span><h2>3. Diagnósticos de Enfermagem — NANDA-I</h2><span class="section-status" id="st3">Não iniciado</span></div>
+      <div class="card-body">
+        <p style="font-size:12px;color:var(--gr500);font-style:italic;margin-bottom:14px">Use linguagem padronizada NANDA-I 2021–2023. Formato: Problema r/c fator relacionado e/c características definidoras.</p>
+        <div id="diagList"></div>
+        <button class="btn-add-row" onclick="addDiag()">+ Adicionar Diagnóstico</button>
+      </div>
+    </div>
+
+    <!-- ══ 4. PLANEJAMENTO ══ -->
+    <div class="card" id="sec4">
+      <div class="card-hdr"><span class="ico">🎯</span><h2>4. Planejamento de Enfermagem</h2><span class="section-status" id="st4">Não iniciado</span></div>
+      <div class="card-body">
+        <p style="font-size:12px;color:var(--gr500);font-style:italic;margin-bottom:14px">Para cada diagnóstico, defina os resultados esperados (NOC) e as intervenções (NIC).</p>
+        <div style="overflow-x:auto">
+          <table class="tfield-table" id="planTable">
+            <thead><tr><th style="width:18%">Diagnóstico (referência)</th><th style="width:40%">Objetivo / Resultado Esperado (NOC)</th><th style="width:42%">Intervenções de Enfermagem (NIC)</th></tr></thead>
+            <tbody id="planBody"></tbody>
+          </table>
+        </div>
+        <button class="btn-add-row" onclick="addPlan()">+ Adicionar linha</button>
+      </div>
+    </div>
+
+    <!-- ══ 5. IMPLEMENTAÇÃO ══ -->
+    <div class="card" id="sec5">
+      <div class="card-hdr"><span class="ico">⚙️</span><h2>5. Implementação das Ações de Enfermagem</h2><span class="section-status" id="st5">Não iniciado</span></div>
+      <div class="card-body">
+        <div class="field-grid field-grid-3" style="margin-bottom:14px">
+          <div class="field"><label>Data do turno</label><input type="date" data-sec="5"/></div>
+          <div class="field"><label>Turno</label>
+            <select data-sec="5"><option value="">Selecione</option><option>Manhã</option><option>Tarde</option><option>Noite</option></select>
+          </div>
+          <div class="field"><label>Enfermeiro(a) responsável</label><input type="text" placeholder="Nome — COREN/UF XXXXX" data-sec="5"/></div>
+        </div>
+        <div id="implList"></div>
+        <button class="btn-add-row" onclick="addImpl()">+ Adicionar ação</button>
+      </div>
+    </div>
+
+    <!-- ══ 6. EVOLUÇÃO ══ -->
+    <div class="card" id="sec6">
+      <div class="card-hdr"><span class="ico">📈</span><h2>6. Evolução de Enfermagem</h2><span class="section-status" id="st6">Não iniciado</span></div>
+      <div class="card-body">
+        <p style="font-size:12px;color:var(--gr500);font-style:italic;margin-bottom:14px">Registre a evolução diária do paciente em linguagem técnica, clara e cronológica.</p>
+        <div id="evolList"></div>
+        <button class="btn-add-row" onclick="addEvol()">+ Adicionar registro de evolução</button>
+      </div>
+    </div>
+
+    <!-- ══ 7. AVALIAÇÃO ══ -->
+    <div class="card" id="sec7">
+      <div class="card-hdr"><span class="ico">✅</span><h2>7. Avaliação do Plano de Cuidados</h2><span class="section-status" id="st7">Não iniciado</span></div>
+      <div class="card-body">
+        <div id="avalList"></div>
+        <button class="btn-add-row" onclick="addAval()">+ Adicionar diagnóstico avaliado</button>
+
+        <div class="sub" style="margin-top:24px">▸ 7.1 Orientações para Alta Hospitalar</div>
+        <div class="alta-grid">
+          <div class="alta-card">
+            <div class="alta-card-title">💊 Medicamentos</div>
+            <div class="field"><textarea rows="3" placeholder="Liste os medicamentos prescritos para alta, doses e horários..." data-sec="7"></textarea></div>
+          </div>
+          <div class="alta-card">
+            <div class="alta-card-title">🥗 Dieta</div>
+            <div class="field"><textarea rows="3" placeholder="Orientações alimentares: tipo de dieta, restrições, alimentos permitidos..." data-sec="7"></textarea></div>
+          </div>
+          <div class="alta-card">
+            <div class="alta-card-title">🚶 Atividade Física</div>
+            <div class="field"><textarea rows="3" placeholder="Nível de atividade permitida, restrições, repouso..." data-sec="7"></textarea></div>
+          </div>
+          <div class="alta-card">
+            <div class="alta-card-title">📅 Retorno Ambulatorial</div>
+            <div class="field"><textarea rows="3" placeholder="Data de retorno, especialidade, local..." data-sec="7"></textarea></div>
+          </div>
+          <div class="alta-card">
+            <div class="alta-card-title">🩺 Cuidados com feridas</div>
+            <div class="field"><textarea rows="3" placeholder="Orientações para cuidados domiciliares..." data-sec="7"></textarea></div>
+          </div>
+          <div class="alta-card alert">
+            <div class="alta-card-title">⚠ Sinais de Alerta</div>
+            <div class="field"><textarea rows="3" placeholder="Situações que exigem retorno imediato ao serviço de saúde..." data-sec="7"></textarea></div>
+          </div>
+        </div>
+
+        <div class="sign-box">
+          <div class="sub">▸ Assinatura do(a) Enfermeiro(a) Responsável</div>
+          <div class="sign-grid">
+            <div class="field"><label>Nome completo</label><input type="text" placeholder="Nome do(a) enfermeiro(a)" data-sec="7"/></div>
+            <div class="field"><label>COREN</label><input type="text" placeholder="COREN/UF XXXXX" data-sec="7"/></div>
+            <div class="field"><label>Data</label><input type="date" data-sec="7"/></div>
+          </div>
+          <div class="field" style="max-width:340px"><label>Assinatura (nome)</label><input type="text" placeholder="________________________________" data-sec="7"/></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      UNIFTC — Curso de Enfermagem — OAT 2 — Processo do Cuidar — 2026<br>
+      Documento fictício elaborado exclusivamente para fins educacionais.
+    </div>
+  </main>
+</div>
+
+<!-- Banner de salvamento -->
+<div class="save-banner" id="saveBanner">
+  <p>💾 Você tem alterações não salvas no prontuário de <span id="bannerNome">—</span></p>
+  <button class="btn-save-banner" onclick="salvarProntuario(true)">Salvar agora</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── AUTH ──────────────────────────────────────────────────────
+if(sessionStorage.getItem('pront_logged') !== 'true') {
+  window.location.href = 'login.html';
+}
+
+// ── ID DO PRONTUÁRIO ──────────────────────────────────────────
+const PRONT_ID = sessionStorage.getItem('pront_editando') || ('PRONT-' + Date.now());
+sessionStorage.setItem('pront_editando', PRONT_ID);
+
+let isDirty = false;
+let autoSaveTimer;
+
+// ── DINÂMICOS ─────────────────────────────────────────────────
+let diagCount = 0, implCount = 0, evolCount = 0, avalCount = 0;
+
+function addDiag(vals) {
+  diagCount++;
+  const n = diagCount;
+  const div = document.createElement('div');
+  div.className = 'diag-row';
+  div.id = 'diag'+n;
+  div.innerHTML = `
+    <div class="diag-num-col">${String(n).padStart(2,'0')}</div>
+    <div class="diag-body-col">
+      <div class="field">
+        <label>Enunciado do Diagnóstico (NANDA-I)</label>
+        <input type="text" placeholder="Ex.: Dor aguda r/c agentes biológicos e/c relato verbal de dor, EVA 8/10" data-sec="3" value="${vals?.enunciado||''}"/>
+      </div>
+      <div class="field-grid field-grid-3">
+        <div class="field"><label>Domínio</label><input type="text" placeholder="Ex.: D12 — Conforto" data-sec="3" value="${vals?.dominio||''}"/></div>
+        <div class="field"><label>Classe</label><input type="text" placeholder="Ex.: Classe 1" data-sec="3" value="${vals?.classe||''}"/></div>
+        <div class="field"><label>Código NANDA</label><input type="text" placeholder="Ex.: 00132" data-sec="3" value="${vals?.codigo||''}"/></div>
+      </div>
+    </div>
+    <button class="btn-remove" onclick="removeEl('diag${n}')" title="Remover">✕</button>`;
+  document.getElementById('diagList').appendChild(div);
+  trackInputs(div, '3');
+}
+
+function addPlan(vals) {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" placeholder="Diag. nº / Título" data-sec="4" value="${vals?.ref||''}"/></td>
+    <td><textarea placeholder="Objetivo / Resultado esperado (NOC)" data-sec="4">${vals?.noc||''}</textarea></td>
+    <td style="display:flex;gap:4px;align-items:flex-start;padding:6px 8px">
+      <textarea placeholder="Intervenções de enfermagem (NIC)" data-sec="4" style="flex:1">${vals?.nic||''}</textarea>
+      <button class="btn-remove" style="margin-top:0" onclick="this.closest('tr').remove();markDirty()" title="Remover">✕</button>
+    </td>`;
+  document.getElementById('planBody').appendChild(tr);
+  trackInputs(tr, '4');
+}
+
+function addImpl(vals) {
+  implCount++;
+  const n = implCount;
+  const div = document.createElement('div');
+  div.className = 'impl-row';
+  div.id = 'impl'+n;
+  div.innerHTML = `
+    <div class="impl-hora field">
+      <label>Horário</label>
+      <input type="time" data-sec="5" value="${vals?.hora||''}"/>
+    </div>
+    <div class="impl-acao field">
+      <label>Ação de Enfermagem Realizada</label>
+      <textarea placeholder="Descreva a ação implementada, materiais utilizados, resposta do paciente..." data-sec="5">${vals?.acao||''}</textarea>
+    </div>
+    <button class="btn-remove" onclick="removeEl('impl${n}')" title="Remover">✕</button>`;
+  document.getElementById('implList').appendChild(div);
+  trackInputs(div, '5');
+}
+
+function addEvol(vals) {
+  evolCount++;
+  const n = evolCount;
+  const div = document.createElement('div');
+  div.className = 'evol-block';
+  div.id = 'evol'+n;
+  div.innerHTML = `
+    <div class="evol-hdr">
+      <label>Data:</label><input type="date" data-sec="6" value="${vals?.data||''}"/>
+      <label>Hora:</label><input type="time" style="width:95px" data-sec="6" value="${vals?.hora||''}"/>
+      <label>Turno:</label>
+      <select data-sec="6">
+        <option value="">Selecione</option>
+        <option${vals?.turno==='Manhã'?' selected':''}>Manhã</option>
+        <option${vals?.turno==='Tarde'?' selected':''}>Tarde</option>
+        <option${vals?.turno==='Noite'?' selected':''}>Noite</option>
+      </select>
+      <label>Enf.ª/Enf.º:</label><input type="text" placeholder="Nome — COREN/UF" style="flex:1" data-sec="6" value="${vals?.enf||''}"/>
+      <button class="btn-remove" style="margin:0" onclick="removeEl('evol${n}')" title="Remover">✕</button>
+    </div>
+    <div class="evol-body">
+      <div class="field">
+        <label>Registro de Evolução</label>
+        <textarea rows="5" placeholder="Descreva em linguagem técnica a evolução do paciente: sinais vitais, queixas, resposta às intervenções, conduta adotada, intercorrências..." data-sec="6">${vals?.texto||''}</textarea>
+      </div>
+    </div>`;
+  document.getElementById('evolList').appendChild(div);
+  trackInputs(div, '6');
+}
+
+function addAval(vals) {
+  avalCount++;
+  const n = avalCount;
+  const div = document.createElement('div');
+  div.className = 'aval-row';
+  div.id = 'aval'+n;
+  div.innerHTML = `
+    <div class="aval-diag field" style="flex:2;min-width:160px">
+      <label>Diagnóstico</label>
+      <input type="text" placeholder="Nome do diagnóstico" data-sec="7" value="${vals?.diag||''}"/>
+    </div>
+    <div class="aval-status-col">
+      <div class="field"><label>Objetivo atingido?</label>
+        <select class="badge-select badge-${vals?.obj||'green'}" data-sec="7" onchange="updateBadgeColor(this)">
+          <option value="">Selecione</option>
+          <option value="green"${vals?.obj==='green'?' selected':''}>Sim</option>
+          <option value="yellow"${vals?.obj==='yellow'?' selected':''}>Parcialmente</option>
+          <option value="red"${vals?.obj==='red'?' selected':''}>Não</option>
+        </select>
+      </div>
+      <div class="field"><label>Status</label>
+        <select class="badge-select badge-${vals?.status||'green'}" data-sec="7" onchange="updateBadgeColor(this)">
+          <option value="">Selecione</option>
+          <option value="green"${vals?.status==='green'?' selected':''}>Resolvido</option>
+          <option value="yellow"${vals?.status==='yellow'?' selected':''}>Em andamento</option>
+          <option value="red"${vals?.status==='red'?' selected':''}>Não resolvido</option>
+        </select>
+      </div>
+    </div>
+    <div class="aval-conduta field" style="flex:2;min-width:160px">
+      <label>Conduta / Reajuste do plano</label>
+      <textarea placeholder="Descreva a conduta tomada ou o reajuste necessário no plano de cuidados..." data-sec="7">${vals?.conduta||''}</textarea>
+    </div>
+    <button class="btn-remove" onclick="removeEl('aval${n}')" title="Remover">✕</button>`;
+  document.getElementById('avalList').appendChild(div);
+  trackInputs(div, '7');
+}
+
+function updateBadgeColor(sel) {
+  sel.className = 'badge-select badge-' + (sel.value || 'green');
+}
+
+function removeEl(id) {
+  const el = document.getElementById(id);
+  if(el) {
+    el.style.opacity='0';el.style.transform='translateX(10px)';el.style.transition='.2s';
+    setTimeout(()=>{el.remove();markDirty()},200);
+  }
+}
+
+// ── PROGRESSO ─────────────────────────────────────────────────
+function initProgress() {
+  document.querySelectorAll('input,textarea,select').forEach(el => {
+    el.addEventListener('input', () => { checkFilled(el); updateProgress(); markDirty(); });
+    el.addEventListener('change', () => { checkFilled(el); updateProgress(); markDirty(); });
+  });
+}
+function trackInputs(container, sec) {
+  container.querySelectorAll('input,textarea,select').forEach(el => {
+    if(!el.dataset.sec) el.dataset.sec = sec;
+    el.addEventListener('input', () => { checkFilled(el); updateProgress(); markDirty(); });
+    el.addEventListener('change', () => { checkFilled(el); updateProgress(); markDirty(); });
+  });
+}
+function checkFilled(el) {
+  if(el.value && el.value.trim()) el.classList.add('filled');
+  else el.classList.remove('filled');
+}
+
+let globalProgress = 0;
+function updateProgress() {
+  let totalFilled = 0, totalInputs = 0;
+  for(let i=1;i<=7;i++) {
+    const sec = document.getElementById('sec'+i);
+    if(!sec) continue;
+    const inputs = sec.querySelectorAll('input,textarea,select');
+    let filled = 0;
+    inputs.forEach(inp => { if(inp.value && inp.value.trim()) filled++; });
+    const pct = inputs.length > 0 ? Math.round(filled/inputs.length*100) : 0;
+    totalFilled += filled; totalInputs += inputs.length;
+    const dot = document.getElementById('dot'+i);
+    const lbl = document.getElementById('lbl'+i);
+    const st  = document.getElementById('st'+i);
+    const pctEl = document.getElementById('pct'+i);
+    if(pct >= 70) {
+      dot.classList.add('done'); lbl.classList.add('done');
+      st.textContent = '✓ Preenchido'; if(pctEl) pctEl.textContent = pct+'%';
+    } else if(pct > 0) {
+      dot.classList.remove('done'); lbl.classList.remove('done');
+      st.textContent = pct+'%'; if(pctEl) pctEl.textContent = pct+'%';
+    } else {
+      dot.classList.remove('done'); lbl.classList.remove('done');
+      st.textContent = 'Não iniciado'; if(pctEl) pctEl.textContent = '';
+    }
+  }
+  globalProgress = totalInputs > 0 ? Math.round(totalFilled/totalInputs*100) : 0;
+  const scrolled = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+  document.getElementById('progressFill').style.width = (scrolled*100)+'%';
+}
+window.addEventListener('scroll', () => {
+  const scrolled = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+  document.getElementById('progressFill').style.width = (scrolled*100)+'%';
+});
+
+// ── SIDEBAR HIGHLIGHT ─────────────────────────────────────────
+const sections = [1,2,3,4,5,6,7].map(i => document.getElementById('sec'+i));
+const navItems = document.querySelectorAll('.nav-item[href^="#sec"]');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting) {
+      navItems.forEach(n => n.classList.remove('active'));
+      const a = document.querySelector(`.nav-item[href="#${entry.target.id}"]`);
+      if(a) a.classList.add('active');
+    }
+  });
+}, { rootMargin:'-15% 0px -75% 0px' });
+sections.forEach(s => { if(s) observer.observe(s); });
+navItems.forEach(item => {
+  item.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(item.getAttribute('href'));
+    if(target) target.scrollIntoView({ behavior:'smooth', block:'start' });
+  });
+});
+
+// ── DIRTY STATE ───────────────────────────────────────────────
+function markDirty() {
+  isDirty = true;
+  const ind = document.getElementById('saveIndicator');
+  ind.textContent = '● Alterações não salvas';
+  ind.className = 'save-indicator';
+  // Banner aparece após 3s de inatividade
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => {
+    const nome = document.getElementById('nomePaciente')?.value || '—';
+    document.getElementById('bannerNome').textContent = nome || '(sem nome)';
+    document.getElementById('saveBanner').classList.add('show');
+  }, 3000);
+}
+
+// ── SALVAR ────────────────────────────────────────────────────
+function coletarDados() {
+  const dados = { campos: [] };
+  document.querySelectorAll('[data-sec]').forEach((el, i) => {
+    dados.campos.push({ sec: el.dataset.sec, tag: el.tagName, val: el.value });
+  });
+  return dados;
+}
+
+function salvarProntuario(showMsg) {
+  const nomePaciente = document.getElementById('nomePaciente')?.value || '';
+  const prontuarios = JSON.parse(localStorage.getItem('prontuarios_v2') || '[]');
+  const idx = prontuarios.findIndex(p => p.id === PRONT_ID);
+  const hoje = new Date().toLocaleDateString('pt-BR');
+  const entrada = {
+    id: PRONT_ID,
+    nomePaciente,
+    dataCriacao: idx >= 0 ? prontuarios[idx].dataCriacao : hoje,
+    updatedAt: Date.now(),
+    progresso: globalProgress,
+    dados: coletarDados()
+  };
+  if(idx >= 0) prontuarios[idx] = entrada;
+  else prontuarios.push(entrada);
+  localStorage.setItem('prontuarios_v2', JSON.stringify(prontuarios));
+
+  isDirty = false;
+  clearTimeout(autoSaveTimer);
+  document.getElementById('saveBanner').classList.remove('show');
+  const ind = document.getElementById('saveIndicator');
+  ind.textContent = '✓ Salvo';
+  ind.className = 'save-indicator saved';
+  if(showMsg) showToast('✓ Prontuário salvo com sucesso!');
+}
+
+// ── CARREGAR DADOS ────────────────────────────────────────────
+function carregarDados(dados) {
+  if(!dados?.campos) return;
+  let campoIdx = 0;
+  const fields = document.querySelectorAll('[data-sec]');
+  dados.campos.forEach(c => {
+    if(campoIdx < fields.length) {
+      const el = fields[campoIdx];
+      if(el.tagName === c.tag) {
+        el.value = c.val;
+        checkFilled(el);
+      }
+      campoIdx++;
+    }
+  });
+}
+
+// ── VOLTAR ────────────────────────────────────────────────────
+function voltarDashboard() {
+  if(isDirty) {
+    if(confirm('Há alterações não salvas. Deseja salvar antes de sair?')) {
+      salvarProntuario(false);
+    }
+  }
+  sessionStorage.setItem('pront_saved', '1');
+  window.location.href = 'dashboard.html';
+}
+
+// ── TOAST ─────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  // Cria linhas padrão
+  for(let i=0;i<3;i++) addDiag();
+  for(let i=0;i<3;i++) addPlan();
+  for(let i=0;i<3;i++) addImpl();
+  for(let i=0;i<2;i++) addEvol();
+  for(let i=0;i<3;i++) addAval();
+  initProgress();
+
+  // Carrega prontuário existente
+  const prontuarios = JSON.parse(localStorage.getItem('prontuarios_v2') || '[]');
+  const existente = prontuarios.find(p => p.id === PRONT_ID);
+  if(existente?.dados) {
+    carregarDados(existente.dados);
+    updateProgress();
+    const ind = document.getElementById('saveIndicator');
+    ind.textContent = '✓ Carregado';
+    ind.className = 'save-indicator saved';
+    setTimeout(() => { ind.textContent = '✓ Salvo'; }, 2000);
+  }
+
+  // Aviso de saída sem salvar
+  window.addEventListener('beforeunload', e => {
+    if(isDirty) { e.preventDefault(); e.returnValue = ''; }
+  });
+});
+
+// Atalho Ctrl+S
+document.addEventListener('keydown', e => {
+  if((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    salvarProntuario(true);
+  }
+});
+</script>
+</body>
+</html>

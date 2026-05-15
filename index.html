@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Login — Prontuário Eletrônico UNIFTC</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --g950:#071E14;--g900:#0B3D2E;--g700:#1E8449;--g600:#27AE60;
+  --g400:#52BE80;--g100:#D5F5E3;--g50:#F0FBF4;--white:#fff;
+  --red:#E74C3C;--red-light:#FFF5F5;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'DM Sans',sans-serif;min-height:100vh;
+  background:var(--g950);display:flex;align-items:center;
+  justify-content:center;position:relative;overflow:hidden;
+}
+
+.bg-circles{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.bg-circles span{
+  position:absolute;border-radius:50%;
+  background:radial-gradient(circle,rgba(39,174,96,.18),transparent 70%);
+  animation:pulse 8s ease-in-out infinite;
+}
+.bg-circles span:nth-child(1){width:600px;height:600px;top:-100px;left:-150px;animation-delay:0s}
+.bg-circles span:nth-child(2){width:400px;height:400px;bottom:-80px;right:-80px;animation-delay:3s}
+.bg-circles span:nth-child(3){width:300px;height:300px;top:40%;left:60%;animation-delay:5s}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.1);opacity:1}}
+
+.bg-grid{
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(39,174,96,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(39,174,96,.04) 1px,transparent 1px);
+  background-size:50px 50px;
+}
+
+/* CARD com painel duplo */
+.card{
+  position:relative;z-index:10;
+  background:rgba(255,255,255,.97);
+  border-radius:20px;width:100%;max-width:460px;
+  margin:20px;
+  box-shadow:0 30px 80px rgba(0,0,0,.4),0 0 0 1px rgba(39,174,96,.1);
+  overflow:hidden;
+  animation:slideUp .5s cubic-bezier(.22,.68,0,1.2) both;
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+/* ABAS */
+.tabs{display:flex;border-bottom:2px solid #F0F2F5}
+.tab{
+  flex:1;padding:16px;text-align:center;
+  font-size:13px;font-weight:700;cursor:pointer;
+  color:#95A5A6;border-bottom:3px solid transparent;
+  margin-bottom:-2px;transition:.2s;letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.tab.active{color:var(--g700);border-bottom-color:var(--g600)}
+.tab:hover:not(.active){color:#566573;background:#FAFBFC}
+
+/* PAINÉIS */
+.panel{display:none;padding:32px 36px 28px}
+.panel.active{display:block;animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.logo-wrap{text-align:center;margin-bottom:24px}
+.logo-icon{
+  width:56px;height:56px;
+  background:linear-gradient(135deg,var(--g700),var(--g600));
+  border-radius:16px;display:inline-flex;align-items:center;
+  justify-content:center;font-size:26px;
+  box-shadow:0 8px 24px rgba(39,174,96,.35);margin-bottom:12px;
+}
+h1{font-family:'Playfair Display',serif;font-size:22px;color:var(--g900);margin-bottom:3px}
+.subtitle{font-size:13px;color:#7F8C8D;line-height:1.4}
+.subtitle strong{color:var(--g700)}
+
+.divider{height:1px;background:linear-gradient(90deg,transparent,#E8EAF0,transparent);margin:20px 0}
+
+/* CAMPOS */
+.field{margin-bottom:16px}
+.field label{
+  display:block;font-size:11px;font-weight:700;
+  color:#5D6D7E;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;
+}
+.input-wrap{position:relative}
+.input-wrap .icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none}
+.input-wrap .eye{
+  position:absolute;right:13px;top:50%;transform:translateY(-50%);
+  font-size:15px;cursor:pointer;background:none;border:none;padding:2px;
+  color:#95A5A6;transition:.2s;
+}
+.input-wrap .eye:hover{color:var(--g700)}
+
+input[type=text],input[type=password],input[type=email]{
+  width:100%;padding:12px 40px 12px 40px;
+  border:2px solid #E8EAF0;border-radius:10px;
+  font-family:'DM Sans',sans-serif;font-size:14px;color:#2C3E50;
+  background:#FAFBFC;transition:all .25s;outline:none;
+}
+input[type=text]:focus,input[type=password]:focus,input[type=email]:focus{
+  border-color:var(--g600);background:#fff;box-shadow:0 0 0 4px rgba(39,174,96,.12);
+}
+input.error{border-color:var(--red);background:var(--red-light)}
+input.error:focus{box-shadow:0 0 0 4px rgba(231,76,60,.1)}
+input.ok{border-color:var(--g400);background:var(--g50)}
+
+.error-msg{display:none;font-size:11.5px;color:var(--red);margin-top:5px;font-weight:500;align-items:center;gap:4px}
+.error-msg.show{display:flex}
+.ok-msg{display:none;font-size:11.5px;color:var(--g700);margin-top:5px;font-weight:500;align-items:center;gap:4px}
+.ok-msg.show{display:flex}
+
+/* FORÇA DA SENHA */
+.strength-bar{height:4px;border-radius:4px;background:#E8EAF0;margin-top:8px;overflow:hidden}
+.strength-fill{height:100%;width:0%;transition:width .3s,background .3s;border-radius:4px}
+.strength-label{font-size:11px;color:#95A5A6;margin-top:4px}
+
+/* BOTÕES */
+.btn-primary{
+  width:100%;padding:14px;
+  background:linear-gradient(135deg,var(--g700),var(--g600));
+  color:white;border:none;border-radius:10px;
+  font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;
+  cursor:pointer;transition:all .25s;
+  box-shadow:0 4px 16px rgba(39,174,96,.3);
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(39,174,96,.4)}
+.btn-primary:active{transform:translateY(0)}
+.btn-primary:disabled{opacity:.6;pointer-events:none}
+
+/* LISTA DE USUÁRIOS */
+.users-list{margin-top:20px}
+.users-list-title{
+  font-size:11px;font-weight:700;color:#95A5A6;
+  text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;
+  display:flex;align-items:center;gap:6px;
+}
+.users-list-title::after{content:'';flex:1;height:1px;background:#E8EAF0}
+.user-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 12px;border-radius:9px;margin-bottom:4px;
+  background:#F8F9FA;border:1px solid #F0F2F5;
+  transition:.15s;
+}
+.user-item:hover{background:#F0FBF4;border-color:var(--g100)}
+.user-avatar{
+  width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,var(--g700),var(--g600));
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:#fff;flex-shrink:0;
+}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:13px;font-weight:600;color:#2C3E50;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-meta{font-size:11px;color:#95A5A6}
+.user-role{
+  font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;
+  background:var(--g100);color:var(--g700);
+}
+.user-role.admin{background:#EBF5FB;color:#1A5276}
+.btn-del-user{
+  background:none;border:none;color:#D5D8DC;cursor:pointer;
+  font-size:14px;padding:4px;transition:.2s;border-radius:5px;
+}
+.btn-del-user:hover{color:var(--red);background:#FDECEA}
+
+.empty-users{text-align:center;padding:20px;color:#BDC3C7;font-size:13px}
+
+/* BADGE ADMIN */
+.admin-badge{
+  background:#EBF5FB;border:1px solid #AED6F1;
+  border-radius:8px;padding:8px 12px;margin-bottom:16px;
+  font-size:12px;color:#1A5276;display:flex;gap:8px;align-items:center;
+}
+
+.footer-note{text-align:center;margin-top:16px;font-size:12px;color:#BDC3C7;line-height:1.5}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:24px;right:24px;
+  background:var(--g800,#145A32);color:#fff;
+  padding:11px 18px;border-radius:9px;
+  font-size:13px;font-weight:600;
+  transform:translateY(80px);opacity:0;transition:.3s;
+  z-index:999;pointer-events:none;
+  box-shadow:0 8px 24px rgba(0,0,0,.2);
+}
+.toast.show{transform:translateY(0);opacity:1}
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-circles"><span></span><span></span><span></span></div>
+
+<div class="card">
+  <!-- LOGO -->
+  <div style="padding:28px 36px 0;text-align:center">
+    <div class="logo-icon">✚</div>
+    <h1>Prontuário Eletrônico</h1>
+    <p class="subtitle"><strong>UNIFTC</strong> — Curso de Enfermagem · OAT 2 · 2026</p>
+  </div>
+
+  <!-- ABAS -->
+  <div class="tabs" style="margin-top:20px">
+    <div class="tab active" onclick="switchTab('login')">Entrar</div>
+    <div class="tab" onclick="switchTab('cadastro')">Criar conta</div>
+    <div class="tab" onclick="switchTab('usuarios')">Usuários</div>
+  </div>
+
+  <!-- PAINEL: LOGIN -->
+  <div class="panel active" id="panelLogin">
+    <div class="divider" style="margin-top:0"></div>
+    <form id="loginForm" novalidate>
+      <div class="field">
+        <label>Matrícula / Usuário</label>
+        <div class="input-wrap">
+          <span class="icon">👤</span>
+          <input type="text" id="lUser" placeholder="Ex.: 202600123" autocomplete="username"/>
+        </div>
+        <div class="error-msg" id="errLUser">⚠ Digite seu usuário</div>
+      </div>
+      <div class="field">
+        <label>Senha</label>
+        <div class="input-wrap">
+          <span class="icon">🔒</span>
+          <input type="password" id="lPass" placeholder="••••••••" autocomplete="current-password"/>
+          <button type="button" class="eye" onclick="toggleVer('lPass',this)" title="Ver senha">👁</button>
+        </div>
+        <div class="error-msg" id="errLPass">⚠ Usuário ou senha incorretos</div>
+      </div>
+      <button type="submit" class="btn-primary" id="btnLogin">Entrar no Sistema</button>
+    </form>
+    <p class="footer-note">Ainda não tem conta? Clique em <strong>Criar conta</strong></p>
+  </div>
+
+  <!-- PAINEL: CADASTRO -->
+  <div class="panel" id="panelCadastro">
+    <div class="divider" style="margin-top:0"></div>
+    <form id="cadastroForm" novalidate>
+      <div class="field">
+        <label>Nome completo</label>
+        <div class="input-wrap">
+          <span class="icon">📛</span>
+          <input type="text" id="cNome" placeholder="Ex.: Maria Santos" autocomplete="name"/>
+        </div>
+        <div class="error-msg" id="errCNome">⚠ Digite seu nome</div>
+      </div>
+      <div class="field">
+        <label>Matrícula / Usuário</label>
+        <div class="input-wrap">
+          <span class="icon">👤</span>
+          <input type="text" id="cUser" placeholder="Ex.: 202600123" autocomplete="username" oninput="checkUserDisponivel()"/>
+        </div>
+        <div class="error-msg" id="errCUser">⚠ Este usuário já está cadastrado</div>
+        <div class="ok-msg" id="okCUser">✓ Usuário disponível</div>
+      </div>
+      <div class="field">
+        <label>Senha</label>
+        <div class="input-wrap">
+          <span class="icon">🔒</span>
+          <input type="password" id="cPass" placeholder="Mínimo 6 caracteres" oninput="checkForca()" autocomplete="new-password"/>
+          <button type="button" class="eye" onclick="toggleVer('cPass',this)">👁</button>
+        </div>
+        <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+        <div class="strength-label" id="strengthLabel"></div>
+        <div class="error-msg" id="errCPass">⚠ Senha deve ter pelo menos 6 caracteres</div>
+      </div>
+      <div class="field">
+        <label>Confirmar senha</label>
+        <div class="input-wrap">
+          <span class="icon">🔒</span>
+          <input type="password" id="cPass2" placeholder="Repita a senha" autocomplete="new-password"/>
+          <button type="button" class="eye" onclick="toggleVer('cPass2',this)">👁</button>
+        </div>
+        <div class="error-msg" id="errCPass2">⚠ As senhas não coincidem</div>
+      </div>
+      <button type="submit" class="btn-primary">Criar Conta</button>
+    </form>
+    <p class="footer-note">Já tem conta? Clique em <strong>Entrar</strong></p>
+  </div>
+
+  <!-- PAINEL: USUÁRIOS -->
+  <div class="panel" id="panelUsuarios">
+    <div class="divider" style="margin-top:0"></div>
+    <div class="admin-badge">🔐 Apenas usuários cadastrados neste dispositivo são exibidos aqui.</div>
+    <div class="users-list">
+      <div class="users-list-title">Contas cadastradas</div>
+      <div id="listaUsuarios"></div>
+    </div>
+    <p class="footer-note" style="margin-top:12px">Para excluir uma conta, clique no 🗑 ao lado do nome</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── BANCO DE USUÁRIOS (localStorage) ─────────────────────────
+// Estrutura: [{user, nome, senha, criadoEm, isAdmin}]
+
+function getUsuarios() {
+  return JSON.parse(localStorage.getItem('pront_usuarios') || '[]');
+}
+function setUsuarios(arr) {
+  localStorage.setItem('pront_usuarios', JSON.stringify(arr));
+}
+
+// Cria usuário admin padrão na primeira vez
+(function seedAdmin() {
+  const lista = getUsuarios();
+  if(!lista.find(u => u.user === 'admin')) {
+    lista.unshift({
+      user: 'admin',
+      nome: 'Administrador',
+      senha: 'enfermagem2026',
+      criadoEm: new Date().toLocaleDateString('pt-BR'),
+      isAdmin: true
+    });
+    setUsuarios(lista);
+  }
+})();
+
+// ── AUTO-LOGIN ────────────────────────────────────────────────
+if(sessionStorage.getItem('pront_logged') === 'true') {
+  window.location.href = 'dashboard.html';
+}
+
+// ── ABAS ──────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active', ['login','cadastro','usuarios'][i] === tab);
+  });
+  document.querySelectorAll('.panel').forEach((p,i) => {
+    p.classList.toggle('active', ['panelLogin','panelCadastro','panelUsuarios'][i] === 'panel'+tab.charAt(0).toUpperCase()+tab.slice(1));
+  });
+  if(tab === 'usuarios') renderUsuarios();
+  clearErrors();
+}
+
+// ── UTILS ─────────────────────────────────────────────────────
+function clearErrors() {
+  document.querySelectorAll('.error-msg').forEach(e => e.classList.remove('show'));
+  document.querySelectorAll('.ok-msg').forEach(e => e.classList.remove('show'));
+  document.querySelectorAll('input').forEach(e => e.classList.remove('error','ok'));
+}
+
+function showErr(fieldId, errId) {
+  document.getElementById(fieldId)?.classList.add('error');
+  document.getElementById(errId)?.classList.add('show');
+}
+
+function toggleVer(inputId, btn) {
+  const inp = document.getElementById(inputId);
+  if(inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+  else { inp.type = 'password'; btn.textContent = '👁'; }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// ── VERIFICAR USUÁRIO DISPONÍVEL ──────────────────────────────
+function checkUserDisponivel() {
+  const val = document.getElementById('cUser').value.trim();
+  const errEl = document.getElementById('errCUser');
+  const okEl = document.getElementById('okCUser');
+  const inp = document.getElementById('cUser');
+  errEl.classList.remove('show');
+  okEl.classList.remove('show');
+  inp.classList.remove('error','ok');
+  if(!val) return;
+  const existe = getUsuarios().find(u => u.user.toLowerCase() === val.toLowerCase());
+  if(existe) { inp.classList.add('error'); errEl.classList.add('show'); }
+  else { inp.classList.add('ok'); okEl.classList.add('show'); }
+}
+
+// ── FORÇA DA SENHA ────────────────────────────────────────────
+function checkForca() {
+  const val = document.getElementById('cPass').value;
+  const fill = document.getElementById('strengthFill');
+  const label = document.getElementById('strengthLabel');
+  let score = 0;
+  if(val.length >= 6) score++;
+  if(val.length >= 10) score++;
+  if(/[A-Z]/.test(val)) score++;
+  if(/[0-9]/.test(val)) score++;
+  if(/[^A-Za-z0-9]/.test(val)) score++;
+  const levels = [
+    {w:'0%',   bg:'#E8EAF0', txt:''},
+    {w:'25%',  bg:'#E74C3C', txt:'Fraca'},
+    {w:'50%',  bg:'#F39C12', txt:'Razoável'},
+    {w:'75%',  bg:'#27AE60', txt:'Boa'},
+    {w:'100%', bg:'#1E8449', txt:'Forte 💪'},
+  ];
+  const lv = levels[Math.min(score, 4)];
+  fill.style.width = lv.w;
+  fill.style.background = lv.bg;
+  label.textContent = lv.txt;
+  label.style.color = lv.bg;
+}
+
+// ── LOGIN ─────────────────────────────────────────────────────
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  clearErrors();
+  const user = document.getElementById('lUser').value.trim();
+  const pass = document.getElementById('lPass').value;
+  let ok = true;
+
+  if(!user) { showErr('lUser','errLUser'); ok = false; }
+  if(!pass)  { showErr('lPass','errLPass'); ok = false; }
+  if(!ok) return;
+
+  const lista = getUsuarios();
+  const encontrado = lista.find(u => u.user.toLowerCase() === user.toLowerCase() && u.senha === pass);
+  if(!encontrado) {
+    showErr('lUser','errLPass');
+    showErr('lPass','errLPass');
+    return;
+  }
+
+  const btn = document.getElementById('btnLogin');
+  btn.disabled = true;
+  btn.textContent = 'Entrando…';
+  setTimeout(() => {
+    sessionStorage.setItem('pront_logged', 'true');
+    sessionStorage.setItem('pront_user', encontrado.nome || encontrado.user);
+    sessionStorage.setItem('pront_userLogin', encontrado.user);
+    window.location.href = 'dashboard.html';
+  }, 600);
+});
+
+// ── CADASTRO ──────────────────────────────────────────────────
+document.getElementById('cadastroForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  clearErrors();
+  const nome  = document.getElementById('cNome').value.trim();
+  const user  = document.getElementById('cUser').value.trim();
+  const pass  = document.getElementById('cPass').value;
+  const pass2 = document.getElementById('cPass2').value;
+  let ok = true;
+
+  if(!nome)             { showErr('cNome','errCNome'); ok = false; }
+  if(!user)             { showErr('cUser','errCUser'); ok = false; }
+  if(pass.length < 6)   { showErr('cPass','errCPass'); ok = false; }
+  if(pass !== pass2)    { showErr('cPass2','errCPass2'); ok = false; }
+
+  // Verifica duplicata
+  const lista = getUsuarios();
+  if(lista.find(u => u.user.toLowerCase() === user.toLowerCase())) {
+    document.getElementById('errCUser').textContent = '⚠ Este usuário já está cadastrado';
+    showErr('cUser','errCUser'); ok = false;
+  }
+  if(!ok) return;
+
+  lista.push({
+    user,
+    nome,
+    senha: pass,
+    criadoEm: new Date().toLocaleDateString('pt-BR'),
+    isAdmin: false
+  });
+  setUsuarios(lista);
+
+  showToast('✓ Conta criada! Faça login agora.');
+  // Limpa e vai para login
+  document.getElementById('cadastroForm').reset();
+  document.getElementById('strengthFill').style.width = '0%';
+  document.getElementById('strengthLabel').textContent = '';
+  setTimeout(() => switchTab('login'), 800);
+});
+
+// ── LISTA DE USUÁRIOS ─────────────────────────────────────────
+function renderUsuarios() {
+  const lista = getUsuarios();
+  const el = document.getElementById('listaUsuarios');
+  if(lista.length === 0) {
+    el.innerHTML = '<div class="empty-users">Nenhum usuário cadastrado</div>';
+    return;
+  }
+  el.innerHTML = lista.map((u,i) => `
+    <div class="user-item" id="uitem${i}">
+      <div class="user-avatar">${(u.nome||u.user)[0].toUpperCase()}</div>
+      <div class="user-info">
+        <div class="user-name">${u.nome || u.user}</div>
+        <div class="user-meta">@${u.user} · desde ${u.criadoEm || '—'}</div>
+      </div>
+      <span class="user-role ${u.isAdmin?'admin':''}">${u.isAdmin?'Admin':'Estudante'}</span>
+      ${u.isAdmin ? '' : `<button class="btn-del-user" onclick="deletarUsuario(${i})" title="Remover">🗑</button>`}
+    </div>
+  `).join('');
+}
+
+function deletarUsuario(idx) {
+  const lista = getUsuarios();
+  const u = lista[idx];
+  if(!u || u.isAdmin) return;
+  if(!confirm(`Remover a conta de "${u.nome || u.user}"? Esta ação não pode ser desfeita.`)) return;
+  lista.splice(idx, 1);
+  setUsuarios(lista);
+  renderUsuarios();
+  showToast('🗑 Usuário removido');
+}
+</script>
+</body>
+</html>
